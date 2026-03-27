@@ -1,0 +1,76 @@
+{
+  "config": {
+    "pass_threshold": 0.7,
+    "max_retries": 3,
+    "temperature_init": 0.7,
+    "temperature_decay": 0.15,
+    "inference_timeout": 60000,
+    "critic_timeout": 30000,
+    "critic_model": "deepseek-r1:latest",
+    "enable_toxicity": true,
+    "token_ceiling": 8192,
+    "heartbeat_interval": 1000
+  },
+  "metrics": {
+    "faithfulness": {
+      "enabled": true,
+      "weight": 0.35,
+      "min_threshold": 0.5
+    },
+    "answer_relevancy": {
+      "enabled": true,
+      "weight": 0.25,
+      "min_threshold": 0.4
+    },
+    "hallucination": {
+      "enabled": true,
+      "weight": 0.30,
+      "max_threshold": 0.5
+    },
+    "toxicity": {
+      "enabled": true,
+      "weight": 0.10,
+      "max_threshold": 0.5
+    }
+  },
+  "confidence_thresholds": {
+    "critic_accept": 0.85,
+    "critic_partial": 0.60,
+    "evaluator_pass": 0.80,
+    "evaluator_warn": 0.65
+  },
+  "banned_patterns": [
+    "As an AI",
+    "I cannot verify",
+    "I don't have access to",
+    "hallucinated-url\\.com"
+  ],
+  "required_sources": {
+    "min_count": 2,
+    "min_relevance_score": 0.70
+  },
+  "token_budget": {
+    "max_tokens_per_query": 50000,
+    "cost_ceiling_usd": 0.00
+  },
+  "timeout": {
+    "agent_timeout_seconds": 30,
+    "total_pipeline_timeout_seconds": 120
+  },
+  "evaluation_weights": {
+    "faithfulness": 0.30,
+    "answer_relevancy": 0.20,
+    "context_precision": 0.20,
+    "context_recall": 0.10,
+    "hallucination": 0.20
+  },
+  "circuit_breaker": {
+    "loop_detection_window": 5,
+    "half_open_retry_after_seconds": 60
+  },
+  "ui": {
+    "confidence_red_below": 0.50,
+    "confidence_yellow_below": 0.75,
+    "confidence_green_above": 0.75
+  }
+}

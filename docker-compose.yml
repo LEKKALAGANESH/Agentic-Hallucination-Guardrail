@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  # Ollama Inference Server
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    entrypoint: >
+      /bin/sh -c "ollama serve & sleep 5 && ollama pull deepseek-r1:latest && wait"
+
+  # FastAPI Backend
+  fastapi:
+    build:
+      context: ./src/backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - DATABASE_URL=sqlite:///data/traces.db
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+
+  # Next.js Frontend
+  nextjs:
+    build:
+      context: ./src/frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      fastapi:
+        condition: service_healthy
+    environment:
+      - NEXT_PUBLIC_API_URL=http://fastapi:8000
+    command: pnpm start
+
+volumes:
+  ollama_data:
